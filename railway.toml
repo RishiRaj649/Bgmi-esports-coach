@@ -1,0 +1,12 @@
+[build]
+builder = "NIXPACKS"
+nixpacksConfigPath = "nixpacks.toml"
+
+[deploy]
+startCommand = "python dashboard_server.py"
+healthcheckPath = "/status"
+restartPolicyType = "ON_FAILURE"
+numReplicas = 1
+
+[deploy.envs.PORT]
+value = "5000"

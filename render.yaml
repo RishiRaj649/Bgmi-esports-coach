@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bgmi-esports-coach
+    runtime: python
+    buildCommand: pip install flask mss numpy opencv-python pillow pydantic pyngrok
+    startCommand: python dashboard_server.py
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    healthCheckPath: /status
+    plan: free

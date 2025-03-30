@@ -1,0 +1,129 @@
+modules = ["python-3.11", "python3"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Simple Display"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Static Demo"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Ngrok Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Dashboard Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "HTTP Server"
+
+[[workflows.workflow]]
+name = "Simple Display"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python simple_display.py"
+waitForPort = 5001
+
+[[workflows.workflow]]
+name = "Static Demo"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python serve_static.py"
+waitForPort = 5002
+
+[[workflows.workflow]]
+name = "Ngrok Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python ngrok_server.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Dashboard Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python dashboard_server.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "HTTP Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python http_server.py"
+waitForPort = 5003
+
+[deployment]
+run = ["sh", "-c", "python minimal_demo.py"]
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
+[[ports]]
+localPort = 5002
+externalPort = 3001
+
+[[ports]]
+localPort = 5003
+externalPort = 3002
+
+[[ports]]
+localPort = 8000
+externalPort = 80

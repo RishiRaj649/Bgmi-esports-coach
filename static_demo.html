@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGMI Esports Coach - Analysis Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #6f42c1;
+            --secondary-color: #fd7e14;
+            --accent-color: #20c997;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: rgba(111, 66, 193, 0.1);
+            font-weight: 600;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .rating {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .rating-excellent {
+            background-color: #28a745;
+        }
+        
+        .rating-good {
+            background-color: #17a2b8;
+        }
+        
+        .rating-average {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .rating-poor {
+            background-color: #dc3545;
+        }
+        
+        .recommendation-card {
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .priority-high {
+            border-left-color: #dc3545;
+        }
+        
+        .priority-medium {
+            border-left-color: #ffc107;
+        }
+        
+        .priority-low {
+            border-left-color: #28a745;
+        }
+        
+        .priority-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+        
+        .nav-tabs .nav-link {
+            color: var(--dark-color);
+            border: none;
+            padding: 10px 15px;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .summary-box {
+            background-color: rgba(111, 66, 193, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-box p {
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+        
+        .match-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Category Icons */
+        .category-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            color: white;
+        }
+        
+        .category-aim {
+            background-color: #6f42c1;
+        }
+        
+        .category-positioning {
+            background-color: #fd7e14;
+        }
+        
+        .category-decision {
+            background-color: #20c997;
+        }
+        
+        .category-general {
+            background-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-controller me-2"></i>
+                BGMI Esports Coach
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Settings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Match Analysis</h2>
+                    <button id="newMatchBtn" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Analyze New Match
+                    </button>
+                </div>
+                
+                <!-- Match Information -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 id="matchTitle">Battle Royale - Erangel</h4>
+                                <div class="match-meta">
+                                    <span class="me-3">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        <span id="matchDate">March 30, 2025</span>
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="bi bi-clock me-1"></i>
+                                        <span id="matchDuration">22:45 minutes</span>
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-trophy me-1"></i>
+                                        <span id="matchPlacement">Top 5</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">Analysis Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Summary Box -->
+                <div class="summary-box">
+                    <h5><i class="bi bi-journal-text me-2"></i>Performance Summary</h5>
+                    <p id="summaryText">
+                        Your gameplay shows Positioning as your strongest skill area. Focus on improving your Decision Making which needs the most attention. In Battle Royale, prioritize positioning and zone awareness over aggressive engagements. On Erangel, use natural terrain for cover during zone rotations.
+                    </p>
+                </div>
+
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4" id="analysisTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-selected="true">
+                            <i class="bi bi-grid me-1"></i>Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="aim-tab" data-bs-toggle="tab" data-bs-target="#aim" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-bullseye me-1"></i>Aim Analysis
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="positioning-tab" data-bs-toggle="tab" data-bs-target="#positioning" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-geo-alt me-1"></i>Positioning
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="decision-tab" data-bs-toggle="tab" data-bs-target="#decision" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-lightbulb me-1"></i>Decision Making
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-list-check me-1"></i>Recommendations
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="analysisTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <div class="row">
+                            <!-- Overall Performance -->
+                            <div class="col-md-4">
+                                <div class="card stat-card">
+                                    <div class="card-body">
+                                        <div class="stat-label">OVERALL PERFORMANCE</div>
+                                        <div class="stat-value">78<small>%</small></div>
+                                        <div><span class="rating rating-good">GOOD</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Metrics -->
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Key Performance Areas
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3">
+                                                    <div class="stat-label">AIM</div>
+                                                    <div class="stat-value">72<small>%</small></div>
+                                                    <div><span class="rating rating-good">GOOD</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3">
+                                                    <div class="stat-label">POSITIONING</div>
+                                                    <div class="stat-value">81<small>%</small></div>
+                                                    <div><span class="rating rating-excellent">EXCELLENT</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3">
+                                                    <div class="stat-label">DECISION MAKING</div>
+                                                    <div class="stat-value">65<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Match Performance Graph -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Performance Radar
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="radarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Top Recommendations Preview -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Top Recommendations
+                            </div>
+                            <div class="card-body">
+                                <div class="recommendation-card card priority-high p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-decision">
+                                            <i class="bi bi-lightbulb"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Better Engagement Decisions 
+                                                <span class="badge bg-danger priority-badge">High Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Only take fights when you have a positional or equipment advantage.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="recommendation-card card priority-high p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-positioning">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Utilize Cover Better 
+                                                <span class="badge bg-danger priority-badge">High Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Always prioritize moving between cover points rather than open areas.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" id="viewAllRecsBtn" data-bs-toggle="tab" data-bs-target="#recommendations">
+                                        View All Recommendations
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aim Analysis Tab -->
+                    <div class="tab-pane fade" id="aim" role="tabpanel" aria-labelledby="aim-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Aim Metrics
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">ACCURACY</div>
+                                                    <div class="stat-value">75<small>%</small></div>
+                                                    <div><span class="rating rating-good">GOOD</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">REACTION TIME</div>
+                                                    <div class="stat-value">68<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">RECOIL CONTROL</div>
+                                                    <div class="stat-value">58<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">HEADSHOT PERCENTAGE</div>
+                                                    <div class="stat-value">32<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Aim Analysis
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="aimChart"></canvas>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>Key Insights:</h6>
+                                            <ul>
+                                                <li>Your accuracy is solid, but reaction time could be improved</li>
+                                                <li>Recoil control needs significant work, especially with ARs</li>
+                                                <li>Headshot percentage is below average for your skill tier</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Aim Recommendations -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Aim Improvement Recommendations
+                            </div>
+                            <div class="card-body">
+                                <div class="recommendation-card card priority-high p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-aim">
+                                            <i class="bi bi-bullseye"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Improve Aim Accuracy 
+                                                <span class="badge bg-danger priority-badge">High Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Practice target tracking in training mode for 15 minutes daily.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="recommendation-card card priority-medium p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-aim">
+                                            <i class="bi bi-bullseye"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Enhance Recoil Control 
+                                                <span class="badge bg-warning text-dark priority-badge">Medium Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Practice spray patterns with AR and SMG weapons on static targets.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Positioning Tab -->
+                    <div class="tab-pane fade" id="positioning" role="tabpanel" aria-labelledby="positioning-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Positioning Metrics
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">COVER USAGE</div>
+                                                    <div class="stat-value">58<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">MOVEMENT EFFICIENCY</div>
+                                                    <div class="stat-value">72<small>%</small></div>
+                                                    <div><span class="rating rating-good">GOOD</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">ZONE AWARENESS</div>
+                                                    <div class="stat-value">84<small>%</small></div>
+                                                    <div><span class="rating rating-excellent">EXCELLENT</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">ROTATION TIMING</div>
+                                                    <div class="stat-value">76<small>%</small></div>
+                                                    <div><span class="rating rating-good">GOOD</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Movement Analysis
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="positioningChart"></canvas>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>Key Insights:</h6>
+                                            <ul>
+                                                <li>Your zone awareness and circle management is excellent</li>
+                                                <li>Rotation timing is good, but could be optimized further</li>
+                                                <li>Cover usage needs significant improvement</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Positioning Recommendations -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Positioning Improvement Recommendations
+                            </div>
+                            <div class="card-body">
+                                <div class="recommendation-card card priority-high p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-positioning">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Utilize Cover Better 
+                                                <span class="badge bg-danger priority-badge">High Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Always prioritize moving between cover points rather than open areas.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="recommendation-card card priority-medium p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-positioning">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Improve Zone Management 
+                                                <span class="badge bg-warning text-dark priority-badge">Medium Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Plan your movements based on zone predictions earlier in the match.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decision Making Tab -->
+                    <div class="tab-pane fade" id="decision" role="tabpanel" aria-labelledby="decision-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Decision Making Metrics
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">ENGAGEMENT CHOICES</div>
+                                                    <div class="stat-value">55<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card mb-3">
+                                                    <div class="stat-label">ITEM MANAGEMENT</div>
+                                                    <div class="stat-value">65<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">TACTICAL PLANNING</div>
+                                                    <div class="stat-value">62<small>%</small></div>
+                                                    <div><span class="rating rating-average">AVERAGE</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="stat-card">
+                                                    <div class="stat-label">TEAM COORDINATION</div>
+                                                    <div class="stat-value">45<small>%</small></div>
+                                                    <div><span class="rating rating-poor">POOR</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Decision Making Analysis
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="decisionChart"></canvas>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>Key Insights:</h6>
+                                            <ul>
+                                                <li>Your engagement choices need significant improvement</li>
+                                                <li>Team coordination is your weakest area overall</li>
+                                                <li>Item management is adequate but can be improved</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Decision Making Recommendations -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Decision Making Improvement Recommendations
+                            </div>
+                            <div class="card-body">
+                                <div class="recommendation-card card priority-high p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-decision">
+                                            <i class="bi bi-lightbulb"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Better Engagement Decisions 
+                                                <span class="badge bg-danger priority-badge">High Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Only take fights when you have a positional or equipment advantage.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="recommendation-card card priority-low p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="category-icon category-decision">
+                                            <i class="bi bi-lightbulb"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Optimize Item Management 
+                                                <span class="badge bg-success priority-badge">Low Priority</span>
+                                            </h5>
+                                            <p class="mb-0">Prioritize picking up essential healing items and ammo before looting other items.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations Tab -->
+                    <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
+                        <h4 class="mb-3">Personalized Improvement Recommendations</h4>
+                        
+                        <!-- High Priority -->
+                        <h5 class="mt-4 mb-3">
+                            <span class="badge bg-danger me-2">High</span> Priority Recommendations
+                        </h5>
+                        <div class="recommendation-card card priority-high p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-aim">
+                                    <i class="bi bi-bullseye"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Improve Aim Accuracy</h5>
+                                    <p class="mb-0">Practice target tracking in training mode for 15 minutes daily.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-card card priority-high p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-positioning">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Utilize Cover Better</h5>
+                                    <p class="mb-0">Always prioritize moving between cover points rather than open areas.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-card card priority-high p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-decision">
+                                    <i class="bi bi-lightbulb"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Better Engagement Decisions</h5>
+                                    <p class="mb-0">Only take fights when you have a positional or equipment advantage.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Medium Priority -->
+                        <h5 class="mt-4 mb-3">
+                            <span class="badge bg-warning text-dark me-2">Medium</span> Priority Recommendations
+                        </h5>
+                        <div class="recommendation-card card priority-medium p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-aim">
+                                    <i class="bi bi-bullseye"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Enhance Recoil Control</h5>
+                                    <p class="mb-0">Practice spray patterns with AR and SMG weapons on static targets.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-card card priority-medium p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-positioning">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Improve Zone Management</h5>
+                                    <p class="mb-0">Plan your movements based on zone predictions earlier in the match.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendation-card card priority-medium p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-general">
+                                    <i class="bi bi-gear"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Consistent Practice Schedule</h5>
+                                    <p class="mb-0">Set aside 30 minutes daily for targeted practice in areas needing improvement.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Low Priority -->
+                        <h5 class="mt-4 mb-3">
+                            <span class="badge bg-success me-2">Low</span> Priority Recommendations
+                        </h5>
+                        <div class="recommendation-card card priority-low p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-icon category-decision">
+                                    <i class="bi bi-lightbulb"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Optimize Item Management</h5>
+                                    <p class="mb-0">Prioritize picking up essential healing items and ammo before looting other items.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>BGMI Esports Coach</h5>
+                    <p class="small">AI-powered gameplay analysis and coaching for competitive BGMI players.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="small">&copy; 2025 BGMI Esports Coach. All rights reserved.</p>
+                    <p class="small">Version 1.0.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Initialize Charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Radar Chart (Overview)
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            const radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Accuracy', 
+                        'Reaction Time', 
+                        'Recoil Control',
+                        'Cover Usage',
+                        'Movement',
+                        'Zone Awareness',
+                        'Engagements',
+                        'Item Management'
+                    ],
+                    datasets: [{
+                        label: 'Your Performance',
+                        data: [75, 68, 58, 58, 72, 84, 55, 65],
+                        backgroundColor: 'rgba(111, 66, 193, 0.2)',
+                        borderColor: 'rgba(111, 66, 193, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(111, 66, 193, 1)',
+                    }, {
+                        label: 'Average Player',
+                        data: [65, 60, 55, 60, 65, 70, 62, 60],
+                        backgroundColor: 'rgba(211, 211, 211, 0.2)',
+                        borderColor: 'rgba(211, 211, 211, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(211, 211, 211, 1)',
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+            
+            // Aim Chart
+            const aimCtx = document.getElementById('aimChart').getContext('2d');
+            const aimChart = new Chart(aimCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy', 'Reaction Time', 'Recoil Control', 'Headshot %'],
+                    datasets: [{
+                        label: 'Your Performance',
+                        data: [75, 68, 58, 32],
+                        backgroundColor: [
+                            'rgba(111, 66, 193, 0.7)',
+                            'rgba(111, 66, 193, 0.7)',
+                            'rgba(111, 66, 193, 0.7)',
+                            'rgba(111, 66, 193, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Target Performance',
+                        data: [85, 80, 75, 50],
+                        backgroundColor: [
+                            'rgba(253, 126, 20, 0.2)',
+                            'rgba(253, 126, 20, 0.2)',
+                            'rgba(253, 126, 20, 0.2)',
+                            'rgba(253, 126, 20, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)'
+                        ],
+                        borderWidth: 1,
+                        type: 'line'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Positioning Chart
+            const positioningCtx = document.getElementById('positioningChart').getContext('2d');
+            const positioningChart = new Chart(positioningCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cover Usage', 'Movement Efficiency', 'Zone Awareness', 'Rotation Timing'],
+                    datasets: [{
+                        label: 'Your Performance',
+                        data: [58, 72, 84, 76],
+                        backgroundColor: [
+                            'rgba(253, 126, 20, 0.7)',
+                            'rgba(253, 126, 20, 0.7)',
+                            'rgba(253, 126, 20, 0.7)',
+                            'rgba(253, 126, 20, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(253, 126, 20, 1)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Target Performance',
+                        data: [75, 80, 85, 80],
+                        backgroundColor: [
+                            'rgba(32, 201, 151, 0.2)',
+                            'rgba(32, 201, 151, 0.2)',
+                            'rgba(32, 201, 151, 0.2)',
+                            'rgba(32, 201, 151, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)'
+                        ],
+                        borderWidth: 1,
+                        type: 'line'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Decision Making Chart
+            const decisionCtx = document.getElementById('decisionChart').getContext('2d');
+            const decisionChart = new Chart(decisionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Engagement Choices', 'Item Management', 'Tactical Planning', 'Team Coordination'],
+                    datasets: [{
+                        label: 'Your Performance',
+                        data: [55, 65, 62, 45],
+                        backgroundColor: [
+                            'rgba(32, 201, 151, 0.7)',
+                            'rgba(32, 201, 151, 0.7)',
+                            'rgba(32, 201, 151, 0.7)',
+                            'rgba(32, 201, 151, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)',
+                            'rgba(32, 201, 151, 1)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Target Performance',
+                        data: [75, 70, 70, 80],
+                        backgroundColor: [
+                            'rgba(111, 66, 193, 0.2)',
+                            'rgba(111, 66, 193, 0.2)',
+                            'rgba(111, 66, 193, 0.2)',
+                            'rgba(111, 66, 193, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)',
+                            'rgba(111, 66, 193, 1)'
+                        ],
+                        borderWidth: 1,
+                        type: 'line'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Handle the "Analyze New Match" button
+            document.getElementById('newMatchBtn').addEventListener('click', function() {
+                // In a real app, this would trigger a backend API call
+                alert('In a complete app, this would start capture and analysis of a new BGMI match. Currently using simulated data.');
+                
+                // Simulate loading state
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing...';
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Analyze New Match';
+                }, 2000);
+            });
+            
+            // Handle the "View All Recommendations" button
+            document.getElementById('viewAllRecsBtn').addEventListener('click', function() {
+                document.getElementById('recommendations-tab').click();
+            });
+        });
+    </script>
+</body>
+</html>

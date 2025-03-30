@@ -1,0 +1,5 @@
+[phases.setup]
+aptPkgs = ["python3", "python3-pip", "python3-venv", "ffmpeg", "libsm6", "libxext6"]
+
+[phases.install]
+cmds = ["python -m venv venv", "source venv/bin/activate", "pip install flask mss numpy opencv-python pillow pydantic pyngrok uvicorn fastapi tensorflow"]
